@@ -30,7 +30,7 @@ public class BaseDieComponent : MonoBehaviour
         if (isRolling)
         {
             Vector3 euler = transform.localEulerAngles;
-            euler.z += Random.Range(1.0f, 30.0f) * ((Mathf.PerlinNoise(Time.realtimeSinceStartup + factor, Time.realtimeSinceStartup + factor) * 2.0f) - 1.0f);
+            euler.z += Random.Range(10.0f, 50.0f) * ((Mathf.PerlinNoise(Time.realtimeSinceStartup + factor, Time.realtimeSinceStartup + factor) * 2.0f) - 1.0f);
             transform.localEulerAngles = euler;
 
             timeRollingRemaining -= Time.deltaTime;

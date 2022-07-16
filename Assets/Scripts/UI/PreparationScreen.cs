@@ -6,6 +6,11 @@ public class PreparationScreen : MonoBehaviour
 {
     [SerializeField] private TMP_Text textMoney;
 
+    [SerializeField] private Image imageT1;
+    [SerializeField] private Image imageT2;
+    [SerializeField] private Image imageT3;
+    [SerializeField] private Image imageT4;
+    [SerializeField] private Image imageT5;
     [SerializeField] private TMP_Text textT1;
     [SerializeField] private TMP_Text textT2;
     [SerializeField] private TMP_Text textT3;
@@ -16,13 +21,11 @@ public class PreparationScreen : MonoBehaviour
     [SerializeField] private TMP_Text textPriceT3;
     [SerializeField] private TMP_Text textPriceT4;
     [SerializeField] private TMP_Text textPriceT5;
-
     [SerializeField] private Button increaseT1;
     [SerializeField] private Button increaseT2;
     [SerializeField] private Button increaseT3;
     [SerializeField] private Button increaseT4;
     [SerializeField] private Button increaseT5;
-
     [SerializeField] private Button decreaseT1;
     [SerializeField] private Button decreaseT2;
     [SerializeField] private Button decreaseT3;
@@ -53,7 +56,7 @@ public class PreparationScreen : MonoBehaviour
     private void UpdateStatus()
     {
         GameManager gm = GameManager.Instance;
-        DiceScriptableObject prices = DiceScriptableObject.Instance;
+        DiceScriptableObject dices = DiceScriptableObject.Instance;
 
         int playerMoney = gm.GetPlayerMoney();
         textMoney.text = playerMoney.ToString();
@@ -64,23 +67,52 @@ public class PreparationScreen : MonoBehaviour
         textT4.text = gm.playerArmyScriptableObject.nbTier4.ToString();
         textT5.text = gm.playerArmyScriptableObject.nbTier5.ToString();
 
-        textPriceT1.text = prices.GetPrice(DieComponent.Tier.Tier1).ToString();
-        textPriceT2.text = prices.GetPrice(DieComponent.Tier.Tier2).ToString();
-        textPriceT3.text = prices.GetPrice(DieComponent.Tier.Tier3).ToString();
-        textPriceT4.text = prices.GetPrice(DieComponent.Tier.Tier4).ToString();
-        textPriceT5.text = prices.GetPrice(DieComponent.Tier.Tier5).ToString();
+        textPriceT1.text = dices.GetPrice(DieComponent.Tier.Tier1).ToString();
+        textPriceT2.text = dices.GetPrice(DieComponent.Tier.Tier2).ToString();
+        textPriceT3.text = dices.GetPrice(DieComponent.Tier.Tier3).ToString();
+        textPriceT4.text = dices.GetPrice(DieComponent.Tier.Tier4).ToString();
+        textPriceT5.text = dices.GetPrice(DieComponent.Tier.Tier5).ToString();
 
-        increaseT1.interactable = playerMoney >= prices.GetPrice(DieComponent.Tier.Tier1);
-        increaseT2.interactable = playerMoney >= prices.GetPrice(DieComponent.Tier.Tier2);
-        increaseT3.interactable = playerMoney >= prices.GetPrice(DieComponent.Tier.Tier3);
-        increaseT4.interactable = playerMoney >= prices.GetPrice(DieComponent.Tier.Tier4);
-        increaseT5.interactable = playerMoney >= prices.GetPrice(DieComponent.Tier.Tier5);
+        increaseT1.interactable = playerMoney >= dices.GetPrice(DieComponent.Tier.Tier1);
+        increaseT2.interactable = playerMoney >= dices.GetPrice(DieComponent.Tier.Tier2);
+        increaseT3.interactable = playerMoney >= dices.GetPrice(DieComponent.Tier.Tier3);
+        increaseT4.interactable = playerMoney >= dices.GetPrice(DieComponent.Tier.Tier4);
+        increaseT5.interactable = playerMoney >= dices.GetPrice(DieComponent.Tier.Tier5);
 
         decreaseT1.interactable = gm.playerArmyScriptableObject.nbTier1 > 0;
         decreaseT2.interactable = gm.playerArmyScriptableObject.nbTier2 > 0;
         decreaseT3.interactable = gm.playerArmyScriptableObject.nbTier3 > 0;
         decreaseT4.interactable = gm.playerArmyScriptableObject.nbTier4 > 0;
         decreaseT5.interactable = gm.playerArmyScriptableObject.nbTier5 > 0;
+
+        readyButton.interactable = gm.GetPlayerDiceCount() > 0;
+
+        // Colors
+        imageT1.color = dices.GetColor(DieComponent.Tier.Tier1);
+        imageT2.color = dices.GetColor(DieComponent.Tier.Tier2);
+        imageT3.color = dices.GetColor(DieComponent.Tier.Tier3);
+        imageT4.color = dices.GetColor(DieComponent.Tier.Tier4);
+        imageT5.color = dices.GetColor(DieComponent.Tier.Tier5);
+        textT1.color = dices.GetColor(DieComponent.Tier.Tier1);
+        textT2.color = dices.GetColor(DieComponent.Tier.Tier2);
+        textT3.color = dices.GetColor(DieComponent.Tier.Tier3);
+        textT4.color = dices.GetColor(DieComponent.Tier.Tier4);
+        textT5.color = dices.GetColor(DieComponent.Tier.Tier5);
+        textPriceT1.color = dices.GetColor(DieComponent.Tier.Tier1);
+        textPriceT2.color = dices.GetColor(DieComponent.Tier.Tier2);
+        textPriceT3.color = dices.GetColor(DieComponent.Tier.Tier3);
+        textPriceT4.color = dices.GetColor(DieComponent.Tier.Tier4);
+        textPriceT5.color = dices.GetColor(DieComponent.Tier.Tier5);
+        increaseT1.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier1);
+        increaseT2.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier2);
+        increaseT3.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier3);
+        increaseT4.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier4);
+        increaseT5.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier5);
+        decreaseT1.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier1);
+        decreaseT2.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier2);
+        decreaseT3.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier3);
+        decreaseT4.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier4);
+        decreaseT5.gameObject.GetComponentInChildren<TMP_Text>().color = dices.GetColor(DieComponent.Tier.Tier5);
     }
 
     private void Ready()

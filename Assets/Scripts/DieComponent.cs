@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class DieComponent : BaseDieComponent
@@ -23,12 +24,18 @@ public class DieComponent : BaseDieComponent
     private float timeToMove;
     private bool shouldBeDestroyed = false;
     private bool playEqualitySound = false;
-    private bool shouldResetToCurrentPos = false;
+
+    private TMP_Text number;
 
     private void Start()
     {
         trail = GetComponent<TrailRenderer>();
         DisableTrail();
+
+        number = GameManager.Instance.CreateNumberText();
+        number.text = value.ToString();
+        number.color = DiceScriptableObject.Instance.GetColor(tier);
+        number.transform.position = transform.position;
     }
 
     private void Update()
@@ -41,12 +48,16 @@ public class DieComponent : BaseDieComponent
             factor = Mathf.SmoothStep(0.0f, 1.0f, factor);
 
             transform.position = Vector2.Lerp(currentPos, targetPos, factor);
+            number.transform.position = transform.position;
+
             if (timeToMoveAcc >= timeToMove)
             {
                 movingToTarget = false;
 
                 if (isPlayerDie)
                 {
+                    GameManager.Instance.cameraShake.Shake(timeToMove * 0.5f);
+
                     if (playEqualitySound)
                     {
                         AudioManager.PlaySound("AttackEquality");
@@ -62,24 +73,23 @@ public class DieComponent : BaseDieComponent
                 if (shouldBeDestroyed)
                 {
                     Destroy(gameObject);
+                    Destroy(number.gameObject);
 
                     if (!isPlayerDie)
                     {
-                        GameManager.Instance.IncreasePlayerGain(DiceScriptableObject.Instance.GetPrice(tier) / GameManager.Instance.gainFactor);
+                        int gainAmount = DiceScriptableObject.Instance.GetPrice(tier) / GameManager.Instance.gainFactor;
+                        GameManager.Instance.IncreasePlayerGain(gainAmount);
+                        // TODO : Play coin sound
+                        GameManager.Instance.CreateGainPopup(transform.position, gainAmount);
                     }
                 }
 
-                shouldResetToCurrentPos = true;
+                transform.position = currentPos;
+                number.transform.position = transform.position;
             }
         }
         else
         {
-            if (shouldResetToCurrentPos)
-            {
-                transform.position = currentPos;
-                shouldResetToCurrentPos = false;
-            }
-
             UpdateBase();
         }
     }
@@ -87,6 +97,10 @@ public class DieComponent : BaseDieComponent
     protected override void OnRollBegin()
     {
         value = GenerateValue();
+        if (number != null)
+        {
+            number.text = value.ToString();
+        }
     }
 
     private int GenerateValue()
@@ -124,11 +138,13 @@ public class DieComponent : BaseDieComponent
         trail.emitting = false;
     }
 
-#if UNITY_EDITOR
-    private void OnDrawGizmos()
+    public void SetPosition(Vector2 position)
     {
-        Gizmos.color = Color.white;
-        UnityEditor.Handles.Label(transform.position, value.ToString());
+        currentPos = position;
+        transform.position = position;
+        if (number != null)
+        {
+            number.transform.position = position;
+        }
     }
-#endif // UNITY_EDITOR
 }

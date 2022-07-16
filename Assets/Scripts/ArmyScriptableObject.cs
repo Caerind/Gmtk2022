@@ -32,6 +32,28 @@ public class ArmyScriptableObject : ScriptableObject
             + nbTier5 * dice.priceTier5;
     }
 
+    public int GetTotalGain()
+    {
+        GameManager[] assets = Resources.LoadAll<GameManager>("");
+        if (assets != null && assets.Length == 1)
+        {
+            GameManager gm = assets[0];
+            return (GetTotalCost() / gm.gainFactor);
+        }
+        return 0;
+    }
+
+    public int GetTotalGainWin()
+    {
+        GameManager[] assets = Resources.LoadAll<GameManager>("");
+        if (assets != null && assets.Length == 1)
+        {
+            GameManager gm = assets[0];
+            return (GetTotalCost() / gm.gainFactor) * gm.winFactor;
+        }
+        return 0;
+    }
+
 #if UNITY_EDITOR
     [UnityEditor.CustomEditor(typeof(ArmyScriptableObject))]
     internal class ArmyScriptableObjectEditor : UnityEditor.Editor
@@ -44,6 +66,8 @@ public class ArmyScriptableObject : ScriptableObject
 
             GUILayout.Label("Total dice: " + army.GetTotalDiceCount());
             GUILayout.Label("Total price: " + army.GetTotalCost());
+            GUILayout.Label("Total gain: " + army.GetTotalGain());
+            GUILayout.Label("Total gain win: " + army.GetTotalGainWin());
         }
     }
 #endif // UNITY_EDITOR

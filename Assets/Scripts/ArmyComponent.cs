@@ -31,12 +31,12 @@ public class ArmyComponent : MonoBehaviour
         DiceScriptableObject diceScriptableObject = DiceScriptableObject.Instance;
 
         GameObject furtherMostGameObject = new GameObject();
-        furtherMostGameObject.transform.parent = transform;
+        furtherMostGameObject.transform.SetParent(transform);
         furtherMostPoint = furtherMostGameObject.transform;
 
         GameObject generalDieObject = Instantiate(diceScriptableObject.prefabGeneral);
         generalDieObject.GetComponent<SpriteRenderer>().color = color;
-        generalDieObject.transform.parent = transform;
+        generalDieObject.transform.SetParent(transform);
         generalDie = generalDieObject.GetComponent<GeneralDieComponent>();
         generalDie.SetPassives(armyScriptableObject.passive1, armyScriptableObject.passive2, armyScriptableObject.passive3);
         generalDie.isPlayerDie = isPlayer;
@@ -45,45 +45,45 @@ public class ArmyComponent : MonoBehaviour
 
         for (int i = 0; i < armyScriptableObject.nbTier5; ++i)
         {
-            GameObject die = Instantiate(diceScriptableObject.prefabTier5);
+            GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier5));
             die.GetComponent<SpriteRenderer>().color = color;
-            die.transform.parent = transform;
+            die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
             dice.Add(dieComponent);
         }
         for (int i = 0; i < armyScriptableObject.nbTier4; ++i)
         {
-            GameObject die = Instantiate(diceScriptableObject.prefabTier4);
+            GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier4));
             die.GetComponent<SpriteRenderer>().color = color;
-            die.transform.parent = transform;
+            die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
             dice.Add(dieComponent);
         }
         for (int i = 0; i < armyScriptableObject.nbTier3; ++i)
         {
-            GameObject die = Instantiate(diceScriptableObject.prefabTier3);
+            GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier3));
             die.GetComponent<SpriteRenderer>().color = color;
-            die.transform.parent = transform;
+            die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
             dice.Add(dieComponent);
         }
         for (int i = 0; i < armyScriptableObject.nbTier2; ++i)
         {
-            GameObject die = Instantiate(diceScriptableObject.prefabTier2);
+            GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier2));
             die.GetComponent<SpriteRenderer>().color = color;
-            die.transform.parent = transform;
+            die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
             dice.Add(dieComponent);
         }
         for (int i = 0; i < armyScriptableObject.nbTier1; ++i)
         {
-            GameObject die = Instantiate(diceScriptableObject.prefabTier1);
+            GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier1));
             die.GetComponent<SpriteRenderer>().color = color;
-            die.transform.parent = transform;
+            die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
             dice.Add(dieComponent);
@@ -123,12 +123,13 @@ public class ArmyComponent : MonoBehaviour
                 col = dicePerRow - col - 1;
             }
 
-            dice[i].transform.position = new Vector2((col - center) * colSize, (rowCount - row + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+            Vector2 diePosition = new Vector2((col - center) * colSize, (rowCount - row + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+            dice[i].SetPosition(diePosition);
         }
 
-        generalDie.transform.position = new Vector2(0, (rowCount + 1 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+        generalDie.transform.position = new Vector2(0, (rowCount + 1.5f + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
 
-        furtherMostPoint.position = new Vector2(0, (rowCount + 2 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+        furtherMostPoint.position = new Vector2(0, (rowCount + 3 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
     }
 
     private void SortByValue()

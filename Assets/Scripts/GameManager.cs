@@ -10,8 +10,14 @@ public class GameManager : Singleton<GameManager>
     public float maxRollDiceTime = 2.0f;
     public float attackDieTime = 0.5f;
 
-    public ArmyScriptableObject playerStartArmyScriptableObject;
-    public ArmyScriptableObject enemyArmyScriptableObject;
+    public int playerStartMoney = 2000;
+
+    public Canvas worldSpaceCanvas;
+    public GameObject dieNumberPrefab;
+    public GameObject gainPopupPrefab;
+
+    public List<EnemyInfoScriptableObject> enemies;
+    public int currentEnemyIndex = 0;
 
     public enum GameState
     {
@@ -25,6 +31,7 @@ public class GameManager : Singleton<GameManager>
     private GameState currentState = GameState.None;
 
     [HideInInspector] public ArmyScriptableObject playerArmyScriptableObject;
+    [HideInInspector] public CinemachineCameraShake cameraShake;
 
     private TargetGroupFinder targetGroupFinder;
     private ArmyComponent playerArmy;
@@ -39,6 +46,7 @@ public class GameManager : Singleton<GameManager>
 
     public int gainFactor = 5;
     public int winFactor = 2;
+    public int looseBonus = 250;
     private int playerMoney = 0;
     private bool playerWin = false;
     private int playerGain = 0;
@@ -49,6 +57,35 @@ public class GameManager : Singleton<GameManager>
     private TMP_Text textRerollCount;
     private Image imageReroll;
     private TMP_Text textMoney;
+    private TMP_Text textEnemyName;
+
+    public void NextEnemy()
+    {
+        if (currentEnemyIndex + 1 < enemies.Count)
+        {
+            currentEnemyIndex++;
+            GetComponent<SpriteRenderer>().sprite = enemies[currentEnemyIndex].enemyMap;
+        }
+    }
+
+    public void CreateGainPopup(Vector2 position, int gainAmount)
+    {
+        GameObject popup = Instantiate(gainPopupPrefab, position, Quaternion.identity);
+        popup.transform.SetParent(worldSpaceCanvas.transform);
+        popup.GetComponentInChildren<TMP_Text>().text = "+" + gainAmount.ToString();
+    }
+
+    public TMP_Text CreateNumberText()
+    {
+        GameObject dieNumber = Instantiate(dieNumberPrefab);
+        dieNumber.transform.SetParent(worldSpaceCanvas.transform);
+        return dieNumber.GetComponent<TMP_Text>();
+    }
+
+    public int GetPlayerDiceCount()
+    {
+        return playerArmyScriptableObject.GetTotalDiceCount();
+    }
 
     public bool GetPlayerHasWin()
     {
@@ -81,7 +118,8 @@ public class GameManager : Singleton<GameManager>
 
         if (playerArmyScriptableObject == null)
         {
-            playerArmyScriptableObject = Instantiate(playerStartArmyScriptableObject);
+            playerArmyScriptableObject = ScriptableObject.CreateInstance<ArmyScriptableObject>();
+            playerMoney = playerStartMoney;
         }
     }
 
@@ -89,13 +127,23 @@ public class GameManager : Singleton<GameManager>
     {
         if (armyComponent.isPlayer)
         {
+            // Hack when starting the game without using the preparation menu in editor
+#if UNITY_EDITOR
+            if (playerArmyScriptableObject.GetTotalDiceCount() == 0)
+            {
+                playerArmyScriptableObject.nbTier1 = 15;
+                playerArmyScriptableObject.nbTier2 = 2;
+                playerMoney = 0;
+            }
+#endif // UNITY_EDITOR
+
             playerArmy = armyComponent;
             playerArmy.InstantiateArmy(playerArmyScriptableObject);
         }
         else
         {
             enemyArmy = armyComponent;
-            enemyArmy.InstantiateArmy(enemyArmyScriptableObject);
+            enemyArmy.InstantiateArmy(enemies[currentEnemyIndex].enemyArmy);
         }
 
         if (playerArmy != null && enemyArmy != null)
@@ -141,6 +189,11 @@ public class GameManager : Singleton<GameManager>
         this.textMoney = textMoney;
     }
 
+    public void RegisterTextEnemyName(TMP_Text textEnemyName)
+    {
+        this.textEnemyName = textEnemyName;
+    }
+
     private void Update()
     {
         UpdateUI();
@@ -173,23 +226,28 @@ public class GameManager : Singleton<GameManager>
 
         if (buttonSkipReroll != null)
         {
-            buttonSkipReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling);
+            buttonSkipReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
         }
 
         if (textRerollCount != null)
         {
-            textRerollCount.gameObject.SetActive(GetCurrentState() == GameState.Rerolling);
+            textRerollCount.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
             textRerollCount.text = rerollCount.ToString();
         }
 
         if (imageReroll != null)
         {
-            imageReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling);
+            imageReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
         }
 
         if (textMoney != null)
         {
             textMoney.text = playerGain.ToString();
+        }
+
+        if (textEnemyName != null)
+        {
+            textEnemyName.text = enemies[currentEnemyIndex].enemyName;
         }
     }
 

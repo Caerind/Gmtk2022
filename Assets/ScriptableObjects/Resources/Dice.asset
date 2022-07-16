@@ -15,11 +15,16 @@ MonoBehaviour:
   prefabGeneral: {fileID: 4417988080865670017, guid: ecb46f44ef231044d8814063450b46a4, type: 3}
   prefabTier1: {fileID: 4417988080865670017, guid: b03001b8369cb7140aa9cbd751fce66b, type: 3}
   priceTier1: 100
+  colorTier1: {r: 1, g: 1, b: 1, a: 1}
   prefabTier2: {fileID: 4417988080865670017, guid: c8ef11dc3c3c51c47b0c602626411f19, type: 3}
   priceTier2: 250
+  colorTier2: {r: 0.069517374, g: 1, b: 0, a: 1}
   prefabTier3: {fileID: 4417988080865670017, guid: 67c56f37f738260449557f220417ce9d, type: 3}
   priceTier3: 500
+  colorTier3: {r: 0, g: 0.90622044, b: 1, a: 1}
   prefabTier4: {fileID: 4417988080865670017, guid: 894cf3127faaa43448dc991a1b0b1654, type: 3}
   priceTier4: 900
+  colorTier4: {r: 1, g: 0, b: 0.64744806, a: 1}
   prefabTier5: {fileID: 4417988080865670017, guid: cd18eaeeb9ba9424cba8af3836cb1b96, type: 3}
   priceTier5: 1500
+  colorTier5: {r: 1, g: 0.43632787, b: 0, a: 1}
