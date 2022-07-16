@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df057e25b5339d3469720028dc5f246a, type: 3}
+  m_Name: Dice
+  m_EditorClassIdentifier: 
+  prefabGeneral: {fileID: 4417988080865670017, guid: ecb46f44ef231044d8814063450b46a4, type: 3}
+  prefabTier1: {fileID: 4417988080865670017, guid: b03001b8369cb7140aa9cbd751fce66b, type: 3}
+  priceTier1: 100
+  prefabTier2: {fileID: 4417988080865670017, guid: c8ef11dc3c3c51c47b0c602626411f19, type: 3}
+  priceTier2: 250
+  prefabTier3: {fileID: 4417988080865670017, guid: 67c56f37f738260449557f220417ce9d, type: 3}
+  priceTier3: 500
+  prefabTier4: {fileID: 4417988080865670017, guid: 894cf3127faaa43448dc991a1b0b1654, type: 3}
+  priceTier4: 900
+  prefabTier5: {fileID: 4417988080865670017, guid: cd18eaeeb9ba9424cba8af3836cb1b96, type: 3}
+  priceTier5: 1500
