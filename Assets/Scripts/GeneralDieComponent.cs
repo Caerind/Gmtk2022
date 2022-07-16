@@ -8,6 +8,11 @@ public class GeneralDieComponent : BaseDieComponent
 
     public Passive currentPassive;
 
+    private void Update()
+    {
+        UpdateBase();
+    }
+
     protected override void OnRollBegin()
     {
         currentPassive = GeneratePassive();

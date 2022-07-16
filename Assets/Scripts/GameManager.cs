@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
     public float minRollDiceTime = 1.0f;
     public float maxRollDiceTime = 2.0f;
+    public float attackDieTime = 0.5f;
 
     public ArmyScriptableObject playerStartArmyScriptableObject;
     public ArmyScriptableObject enemyArmyScriptableObject;
@@ -16,12 +19,12 @@ public class GameManager : Singleton<GameManager>
         Begining,
         Rolling,
         Rerolling,
-        Handling,
+        Resolving,
         Ended
     }
     private GameState currentState = GameState.None;
 
-    public ArmyScriptableObject playerArmyScriptableObject;
+    [HideInInspector] public ArmyScriptableObject playerArmyScriptableObject;
 
     private TargetGroupFinder targetGroupFinder;
     private ArmyComponent playerArmy;
@@ -29,6 +32,48 @@ public class GameManager : Singleton<GameManager>
     private int rollingDiceCount = 0;
     private int rerollCount;
     private bool shouldStopRerollState = false;
+    private float timeWaitBetweenDie;
+
+    private List<ArmyComponent.DieValue> playerValues;
+    private List<ArmyComponent.DieValue> enemyValues;
+
+    public int gainFactor = 5;
+    public int winFactor = 2;
+    private int playerMoney = 0;
+    private bool playerWin = false;
+    private int playerGain = 0;
+
+    private TMP_Text textGameState;
+    private Button buttonRoll;
+    private Button buttonSkipReroll;
+    private TMP_Text textRerollCount;
+    private Image imageReroll;
+    private TMP_Text textMoney;
+
+    public bool GetPlayerHasWin()
+    {
+        return playerWin;
+    }
+
+    public int GetPlayerGain()
+    {
+        return playerGain;
+    }
+
+    public int GetPlayerMoney()
+    {
+        return playerMoney;
+    }
+
+    public void IncreasePlayerMoney(int amount)
+    {
+        playerMoney += amount;
+    }
+
+    public void DecreasePlayerMoney(int amount)
+    {
+        playerMoney -= amount;
+    }
 
     private void Start()
     {
@@ -64,47 +109,87 @@ public class GameManager : Singleton<GameManager>
         this.targetGroupFinder = targetGroupFinder;
     }
 
+    public void RegisterTextGameStateComponent(TMP_Text textGameState)
+    {
+        this.textGameState = textGameState;
+    }
+
+    public void RegisterButtonRollComponent(Button buttonRoll)
+    {
+        this.buttonRoll = buttonRoll;
+        this.buttonRoll.onClick.AddListener(() => SwitchGameState(GameState.Rolling));
+    }
+
+    public void RegisterButtonSkipRerollComponent(Button buttonSkipReroll)
+    {
+        this.buttonSkipReroll = buttonSkipReroll;
+        this.buttonSkipReroll.onClick.AddListener(() => shouldStopRerollState = true);
+    }
+
+    public void RegisterTextRerollCountComponent(TMP_Text textRerollCount)
+    {
+        this.textRerollCount = textRerollCount;
+    }
+
+    public void RegisterImageRerollComponent(Image imageReroll)
+    {
+        this.imageReroll = imageReroll;
+    }
+
+    public void RegisterTextMoneyComponent(TMP_Text textMoney)
+    {
+        this.textMoney = textMoney;
+    }
+
     private void Update()
     {
+        UpdateUI();
+
         if (GetCurrentState() == GameState.Rolling && !HasRollingDice())
         {
             SwitchGameState(GameState.Rerolling);
         }
         else if (GetCurrentState() == GameState.Rerolling && shouldStopRerollState && !HasRollingDice())
         {
-            SwitchGameState(GameState.Handling);
+            SwitchGameState(GameState.Resolving);
         }
-        else if (GetCurrentState() == GameState.Handling)
+        else if (GetCurrentState() == GameState.Resolving)
         {
             Handle();
-
-            if (playerArmy.HasLost() || enemyArmy.HasLost())
-            {
-                SwitchGameState(GameState.Ended);
-            }
-            else
-            {
-                SwitchGameState(GameState.Begining);
-            }
         }
     }
 
-    private void OnGUI()
+    private void UpdateUI()
     {
-        if (GetCurrentState() == GameState.Begining)
+        if (textGameState != null)
         {
-            if (GUI.Button(new Rect(10, 10, 300, 100), "Roll"))
-            {
-                SwitchGameState(GameState.Rolling);
-            }
+            textGameState.text = currentState.ToString();
         }
-        else if (GetCurrentState() == GameState.Rerolling)
+
+        if (buttonRoll != null)
         {
-            GUI.Label(new Rect(10, 10, 300, 100), "Reroll: " + rerollCount.ToString());
-            if (GUI.Button(new Rect(10, 120, 300, 100), "End rolling"))
-            {
-                shouldStopRerollState = true;
-            }
+            buttonRoll.gameObject.SetActive(GetCurrentState() == GameState.Begining);
+        }
+
+        if (buttonSkipReroll != null)
+        {
+            buttonSkipReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling);
+        }
+
+        if (textRerollCount != null)
+        {
+            textRerollCount.gameObject.SetActive(GetCurrentState() == GameState.Rerolling);
+            textRerollCount.text = rerollCount.ToString();
+        }
+
+        if (imageReroll != null)
+        {
+            imageReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling);
+        }
+
+        if (textMoney != null)
+        {
+            textMoney.text = playerGain.ToString();
         }
     }
 
@@ -112,18 +197,16 @@ public class GameManager : Singleton<GameManager>
     {
         switch (newState)
         {
-            case GameState.None: break;
+            case GameState.None:
+                playerGain = 0;
+                break;
             case GameState.Begining:
                 playerArmy.Replace(valueOrdered: false);
                 enemyArmy.Replace(valueOrdered: false);
                 List<Transform> diceTransforms = new List<Transform>(2);
-                diceTransforms.Add(playerArmy.GetGeneralDie().transform);
-                diceTransforms.Add(enemyArmy.GetGeneralDie().transform);
+                diceTransforms.Add(playerArmy.GetFurtherMostPoint());
+                diceTransforms.Add(enemyArmy.GetFurtherMostPoint());
                 targetGroupFinder.SetGroup(diceTransforms);
-                break;
-            case GameState.Handling:
-                playerArmy.Replace(valueOrdered: true);
-                enemyArmy.Replace(valueOrdered: true);
                 break;
             case GameState.Rolling:
                 rollingDiceCount = 0;
@@ -135,7 +218,29 @@ public class GameManager : Singleton<GameManager>
                 rerollCount = Random.Range(1, 5); // D4
                 shouldStopRerollState = false;
                 break;
+            case GameState.Resolving:
+                playerArmy.Replace(valueOrdered: true);
+                enemyArmy.Replace(valueOrdered: true);
+                playerValues = playerArmy.GetValues();
+                enemyValues = enemyArmy.GetValues();
+                ArmyComponent.DieValueComparer comparer = new ArmyComponent.DieValueComparer();
+                playerValues.Sort(comparer);
+                enemyValues.Sort(comparer);
+                if (playerValues.Count != enemyValues.Count)
+                {
+                    if (playerValues.Count > enemyValues.Count)
+                    {
+                        playerValues = playerValues.Skip(playerValues.Count - enemyValues.Count).Take(enemyValues.Count).ToList();
+                    }
+                    else
+                    {
+                        enemyValues = enemyValues.Skip(enemyValues.Count - playerValues.Count).Take(playerValues.Count).ToList();
+                    }
+                }
+                timeWaitBetweenDie = 0.0f;
+                break;
             case GameState.Ended:
+                playerWin = enemyArmy.HasLost();
                 SimpleSceneLoaderComponent sceneLoaderComponent = FindObjectOfType<SimpleSceneLoaderComponent>();
                 sceneLoaderComponent.LoadSceneAdditive();
                 playerArmy = null;
@@ -175,6 +280,7 @@ public class GameManager : Singleton<GameManager>
             }
         }
     }
+
     public bool CanRerollDie()
     {
         return rerollCount > 0;
@@ -182,55 +288,56 @@ public class GameManager : Singleton<GameManager>
 
     private void Handle()
     {
-        List<ArmyComponent.DieValue> playerValues = playerArmy.GetValues();
-        List<ArmyComponent.DieValue> enemyValues = enemyArmy.GetValues();
-
-        ArmyComponent.DieValueComparer comparer = new ArmyComponent.DieValueComparer();
-        playerValues.Sort(comparer);
-        enemyValues.Sort(comparer);
-
-        // Reduce
-        if (playerValues.Count != enemyValues.Count)
+        timeWaitBetweenDie -= Time.deltaTime;
+        if (timeWaitBetweenDie <= 0.0f)
         {
-            if (playerValues.Count > enemyValues.Count)
+            timeWaitBetweenDie = attackDieTime;
+
+            // End of the game ?
+            if (playerArmy.HasLost() || enemyArmy.HasLost())
             {
-                playerValues = playerValues.Skip(playerValues.Count - enemyValues.Count).Take(enemyValues.Count).ToList();
+                SwitchGameState(GameState.Ended);
+            }
+            else if (playerValues == null || playerValues.Count == 0)
+            {
+                SwitchGameState(GameState.Begining);
             }
             else
             {
-                enemyValues = enemyValues.Skip(enemyValues.Count - playerValues.Count).Take(playerValues.Count).ToList();
+                ArmyComponent.DieValue playerDieValue = playerValues[0];
+                ArmyComponent.DieValue enemyDieValue = enemyValues[0];
+                playerValues.RemoveAt(0);
+                enemyValues.RemoveAt(0);
+
+                Vector2 midPos = (playerDieValue.die.transform.position + enemyDieValue.die.transform.position) * 0.5f;
+
+                // mdr names
+                bool playerDieDie = false; 
+                bool enemyDieDie = false;
+
+                ArmyComponent.DieValueComparer comparer = new ArmyComponent.DieValueComparer();
+                int cmp = comparer.Compare(playerDieValue, enemyDieValue);
+                if (cmp > 0)
+                {
+                    enemyDieDie = true;
+                    enemyArmy.RemoveDie(enemyDieValue.die);
+                }
+                else if (cmp < 0)
+                {
+                    playerDieDie = true;
+                    playerArmy.RemoveDie(playerDieValue.die);
+                }
+
+                bool playEqualitySound = !playerDieDie && !enemyDieDie;
+                playerDieValue.die.Attack(midPos, attackDieTime, playerDieDie, playEqualitySound);
+                enemyDieValue.die.Attack(midPos, attackDieTime, enemyDieDie, false);
             }
         }
+    }
 
-        int[] playerLoss = new int[5];
-        int[] enemyLoss = new int[5];
-
-        for (int i = 0; i < playerValues.Count; ++i)
-        {
-            ArmyComponent.DieValue playerDieValue = playerValues[i];
-            ArmyComponent.DieValue enemyDieValue = enemyValues[i];
-
-            int cmp = comparer.Compare(playerDieValue, enemyDieValue);
-            if (cmp > 0)
-            {
-                enemyLoss[(int)enemyDieValue.tier]++;
-            }
-            else if (cmp < 0)
-            {
-                playerLoss[(int)playerDieValue.tier]++;
-            }
-            else
-            {
-                // Do not kill both as we don't want to have a game where both players loose
-                /*
-                playerLoss[(int)playerDieValue.tier]++;
-                enemyLoss[(int)enemyDieValue.tier]++;
-                */
-            }
-        }
-
-        playerArmy.ExecuteLoss(playerLoss);
-        enemyArmy.ExecuteLoss(enemyLoss);
+    public void IncreasePlayerGain(int price)
+    {
+        playerGain += price;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

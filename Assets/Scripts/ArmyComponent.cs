@@ -9,6 +9,7 @@ public class ArmyComponent : MonoBehaviour
 
     private List<DieComponent> dice;
     private GeneralDieComponent generalDie;
+    private Transform furtherMostPoint;
 
     private void Start()
     {
@@ -28,6 +29,10 @@ public class ArmyComponent : MonoBehaviour
     public void InstantiateArmy(ArmyScriptableObject armyScriptableObject)
     {
         DiceScriptableObject diceScriptableObject = DiceScriptableObject.Instance;
+
+        GameObject furtherMostGameObject = new GameObject();
+        furtherMostGameObject.transform.parent = transform;
+        furtherMostPoint = furtherMostGameObject.transform;
 
         GameObject generalDieObject = Instantiate(diceScriptableObject.prefabGeneral);
         generalDieObject.GetComponent<SpriteRenderer>().color = color;
@@ -96,8 +101,9 @@ public class ArmyComponent : MonoBehaviour
             SortByTier();
         }
 
-        const float rowSize = 2f;
-        const float colSize = 2f;
+        const float rowSize = 2.0f;
+        const float colSize = 2.0f;
+        const float noManLandSize = 1.0f;
 
         // Find how to compute this
         // -> Based on screen size
@@ -109,9 +115,6 @@ public class ArmyComponent : MonoBehaviour
 
         for (int i = dice.Count - 1; i >= 0; i--)
         {
-            // DEBUG
-            dice[i].value = i;
-
             int row = i / dicePerRow;
             int col = i % dicePerRow;
 
@@ -120,16 +123,18 @@ public class ArmyComponent : MonoBehaviour
                 col = dicePerRow - col - 1;
             }
 
-            dice[i].transform.position = new Vector2((col - center) * colSize, (rowCount - row) * rowSize * (isPlayer ? 1 : -1));
+            dice[i].transform.position = new Vector2((col - center) * colSize, (rowCount - row + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
         }
 
-        Vector2 armyPosition = transform.position;
-        generalDie.transform.position = armyPosition;
+        generalDie.transform.position = new Vector2(0, (rowCount + 1 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+
+        furtherMostPoint.position = new Vector2(0, (rowCount + 2 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
     }
 
     private void SortByValue()
     {
         dice = dice.OrderBy(die => die.value).ThenBy(die => die.tier).ToList();
+        dice.Reverse();
     }
 
     private void SortByTier()
@@ -138,11 +143,12 @@ public class ArmyComponent : MonoBehaviour
         {
             return firstObj.tier.CompareTo(secondObj.tier);
         });
+        dice.Reverse();
     }
 
-    public GeneralDieComponent GetGeneralDie()
+    public Transform GetFurtherMostPoint()
     {
-        return generalDie;
+        return furtherMostPoint;
     }
 
     public void RollDice()
@@ -156,6 +162,7 @@ public class ArmyComponent : MonoBehaviour
 
     public class DieValue
     {
+        public DieComponent die;
         public DieComponent.Tier tier;
         public int value;
     }
@@ -173,6 +180,7 @@ public class ArmyComponent : MonoBehaviour
         foreach (DieComponent die in dice)
         {
             DieValue dieValue = new DieValue();
+            dieValue.die = die;
             dieValue.tier = die.tier;
             dieValue.value = die.value;
             values.Add(dieValue);
@@ -180,23 +188,8 @@ public class ArmyComponent : MonoBehaviour
         return values;
     }
 
-    public void ExecuteLoss(int[] loss)
+    public void RemoveDie(DieComponent die)
     {
-        for (int tierIndex = 0; tierIndex < loss.Length; ++tierIndex)
-        {
-            DieComponent.Tier tier = (DieComponent.Tier)tierIndex;
-            for (int j = 0; j < loss[tierIndex]; ++j)
-            {
-                for (int i = 0; i < dice.Count; ++i)
-                {
-                    if (dice[i].tier == tier)
-                    {
-                        Destroy(dice[i].gameObject);
-                        dice.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
-        }
+        dice.Remove(die);
     }
 }

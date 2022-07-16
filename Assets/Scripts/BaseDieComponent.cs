@@ -25,7 +25,7 @@ public class BaseDieComponent : MonoBehaviour
         OnRollBegin();
     }
 
-    private void Update()
+    protected void UpdateBase()
     {
         if (isRolling)
         {
