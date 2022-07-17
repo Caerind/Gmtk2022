@@ -3,10 +3,6 @@ using UnityEngine;
 [CreateAssetMenu]
 public class ArmyScriptableObject : ScriptableObject
 {
-    public Passive passive1;
-    public Passive passive2;
-    public Passive passive3;
-
     public int nbTier1;
     public int nbTier2;
     public int nbTier3;

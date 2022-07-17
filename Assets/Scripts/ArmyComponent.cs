@@ -7,8 +7,10 @@ public class ArmyComponent : MonoBehaviour
     public Color color;
     public bool isPlayer;
 
+    public Passive passive;
+
     private List<DieComponent> dice;
-    private GeneralDieComponent generalDie;
+    [HideInInspector] public DieComponent generalDie;
     private Transform furtherMostPoint;
 
     private void Start()
@@ -26,27 +28,36 @@ public class ArmyComponent : MonoBehaviour
         return dice.Count;
     }
 
-    public void InstantiateArmy(ArmyScriptableObject armyScriptableObject)
+    public void InstantiateArmy(ArmyScriptableObject armyScriptableObject, Passive passive)
     {
+        this.passive = passive;
+
         DiceScriptableObject diceScriptableObject = DiceScriptableObject.Instance;
 
         GameObject furtherMostGameObject = new GameObject();
         furtherMostGameObject.transform.SetParent(transform);
         furtherMostPoint = furtherMostGameObject.transform;
 
-        GameObject generalDieObject = Instantiate(diceScriptableObject.prefabGeneral);
-        generalDieObject.GetComponent<SpriteRenderer>().color = color;
-        generalDieObject.transform.SetParent(transform);
-        generalDie = generalDieObject.GetComponent<GeneralDieComponent>();
-        generalDie.SetPassives(armyScriptableObject.passive1, armyScriptableObject.passive2, armyScriptableObject.passive3);
-        generalDie.isPlayerDie = isPlayer;
+        if (passive != null)
+        {
+            GameObject generalDieObject = Instantiate(diceScriptableObject.GetPrefab(passive.generalDieTier));
+            generalDieObject.transform.localScale = Vector2.one * 2.0f;
+            generalDieObject.transform.Find("Square").GetComponent<SpriteRenderer>().color = color;
+            generalDieObject.transform.SetParent(transform);
+            generalDie = generalDieObject.GetComponent<DieComponent>();
+            generalDie.isPlayerDie = isPlayer;
+        }
+        else
+        {
+            generalDie = null;
+        }
 
         dice = new List<DieComponent>(armyScriptableObject.GetTotalDiceCount());
 
         for (int i = 0; i < armyScriptableObject.nbTier5; ++i)
         {
             GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier5));
-            die.GetComponent<SpriteRenderer>().color = color;
+            die.transform.Find("Square").GetComponent<SpriteRenderer>().color = color;
             die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
@@ -55,7 +66,7 @@ public class ArmyComponent : MonoBehaviour
         for (int i = 0; i < armyScriptableObject.nbTier4; ++i)
         {
             GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier4));
-            die.GetComponent<SpriteRenderer>().color = color;
+            die.transform.Find("Square").GetComponent<SpriteRenderer>().color = color;
             die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
@@ -64,7 +75,7 @@ public class ArmyComponent : MonoBehaviour
         for (int i = 0; i < armyScriptableObject.nbTier3; ++i)
         {
             GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier3));
-            die.GetComponent<SpriteRenderer>().color = color;
+            die.transform.Find("Square").GetComponent<SpriteRenderer>().color = color;
             die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
@@ -73,7 +84,7 @@ public class ArmyComponent : MonoBehaviour
         for (int i = 0; i < armyScriptableObject.nbTier2; ++i)
         {
             GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier2));
-            die.GetComponent<SpriteRenderer>().color = color;
+            die.transform.Find("Square").GetComponent<SpriteRenderer>().color = color;
             die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
@@ -82,7 +93,7 @@ public class ArmyComponent : MonoBehaviour
         for (int i = 0; i < armyScriptableObject.nbTier1; ++i)
         {
             GameObject die = Instantiate(diceScriptableObject.GetPrefab(DieComponent.Tier.Tier1));
-            die.GetComponent<SpriteRenderer>().color = color;
+            die.transform.Find("Square").GetComponent<SpriteRenderer>().color = color;
             die.transform.SetParent(transform);
             DieComponent dieComponent = die.GetComponent<DieComponent>();
             dieComponent.isPlayerDie = isPlayer;
@@ -92,6 +103,11 @@ public class ArmyComponent : MonoBehaviour
 
     public void Replace(bool valueOrdered = false)
     {
+        foreach (var die in dice)
+            die.UpdateValue();
+        if (generalDie != null)
+            generalDie.UpdateValue();
+
         if (valueOrdered)
         {
             SortByValue();
@@ -127,9 +143,25 @@ public class ArmyComponent : MonoBehaviour
             dice[i].SetPosition(diePosition);
         }
 
-        generalDie.transform.position = new Vector2(0, (rowCount + 1.5f + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+        if (generalDie != null)
+        {
+            generalDie.SetPosition(new Vector2(0, (rowCount + 1.5f + noManLandSize) * rowSize * (isPlayer ? -1 : 1)));
+            furtherMostPoint.position = new Vector2(0, (rowCount + 3 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
 
-        furtherMostPoint.position = new Vector2(0, (rowCount + 3 + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+            if (isPlayer)
+            {
+                GameManager.Instance.canvasWorldSpace.imagePassivePlayer.transform.position = generalDie.transform.position + new Vector3(4, 0, 0);
+            }
+            else
+            {
+                GameManager.Instance.canvasWorldSpace.imagePassiveEnemy.transform.position = generalDie.transform.position + new Vector3(4, 0, 0);
+            }
+        }
+        else
+        {
+            furtherMostPoint.position = new Vector2(0, (rowCount + 1.5f + noManLandSize) * rowSize * (isPlayer ? -1 : 1));
+        }
+
     }
 
     private void SortByValue()
@@ -154,7 +186,11 @@ public class ArmyComponent : MonoBehaviour
 
     public void RollDice()
     {
-        generalDie.Roll();
+        if (generalDie != null)
+        {
+            generalDie.Roll();
+        }
+
         foreach (DieComponent die in dice)
         {
             die.Roll();
@@ -196,7 +232,11 @@ public class ArmyComponent : MonoBehaviour
 
     public void UnhoverAll()
     {
-        generalDie.Unhover();
+        if (generalDie != null)
+        {
+            generalDie.Unhover();
+        }
+
         foreach (var die in dice)
             die.Unhover();
     }

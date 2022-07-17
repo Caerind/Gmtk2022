@@ -57,9 +57,16 @@ MonoBehaviour:
   minRollDiceTime: 1
   maxRollDiceTime: 3
   attackDieTime: 0.5
-  playerStartMoney: 1500
-  worldSpaceCanvas: {fileID: 0}
-  HUDCanvas: {fileID: 0}
+  playerPossiblePassives:
+  - {fileID: 11400000, guid: 809cae22caa93f34591e885414914b20, type: 2}
+  - {fileID: 11400000, guid: e37c91dc24f8a9344ace96d829f338ff, type: 2}
+  - {fileID: 11400000, guid: d464744523d5a8d47887ce8ba869104f, type: 2}
+  - {fileID: 11400000, guid: 9df268d82f8c30b44bb444edf3bf871c, type: 2}
+  playerStartMoney: 1600
+  hoverColor: {r: 1, g: 0, b: 0.81019783, a: 0.5019608}
+  selectedColor: {r: 1, g: 0.9635534, b: 0, a: 0.5019608}
+  canvasWorldSpace: {fileID: 0}
+  canvasHUD: {fileID: 0}
   gainPopupTransform: {fileID: 0}
   gainPopupRandomDev: {x: 50, y: 10}
   dieNumberPrefab: {fileID: 1017476445389649289, guid: 7b45aeb86ad46824da9d6999d94617a5, type: 3}
@@ -70,11 +77,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b5db5bbe955dccf4e836692dd2dc3440, type: 2}
   - {fileID: 11400000, guid: de7624311baa98a45a00dcd418271490, type: 2}
   currentEnemyIndex: 0
+  playerPassive: {fileID: 0}
   playerArmyScriptableObject: {fileID: 0}
   cameraShake: {fileID: 0}
   gainFactor: 5
   winFactor: 2
-  looseBonus: 250
+  looseBonus: 300
 --- !u!114 &8559577443766302535
 MonoBehaviour:
   m_ObjectHideFlags: 0

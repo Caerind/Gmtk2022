@@ -14,7 +14,7 @@ public class BaseDieComponent : MonoBehaviour
     private void Awake()
     {
         myCollider2D = GetComponent<Collider2D>();
-        myHoverSpriteRenderer = transform.Find("Square").GetComponent<SpriteRenderer>();
+        myHoverSpriteRenderer = transform.Find("Circle").GetComponent<SpriteRenderer>();
         myHoverSpriteRenderer.gameObject.SetActive(false);
         OnRollBegin();
     }
@@ -41,13 +41,15 @@ public class BaseDieComponent : MonoBehaviour
 
     protected void UpdateBase()
     {
-        if (myHoverSpriteRenderer.color == Color.magenta)
+        if (myHoverSpriteRenderer.color == GameManager.Instance.hoverColor)
         {
             Unhover();
         }
 
         if (isRolling)
         {
+            OnRollContinue();
+
             Vector3 euler = transform.localEulerAngles;
             euler.z += Random.Range(10.0f, 50.0f) * ((Mathf.PerlinNoise(Time.realtimeSinceStartup + factor, Time.realtimeSinceStartup + factor) * 2.0f) - 1.0f);
             transform.localEulerAngles = euler;
@@ -67,7 +69,7 @@ public class BaseDieComponent : MonoBehaviour
                 Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 if (myCollider2D.OverlapPoint(mousePosition))
                 {
-                    Hover(Color.magenta);
+                    Hover(GameManager.Instance.hoverColor);
 
                     if (Input.GetMouseButtonDown(0))
                     {
@@ -77,6 +79,16 @@ public class BaseDieComponent : MonoBehaviour
                 }
             }
         }
+    }
+
+    protected virtual void OnRollContinue()
+    {
+
+    }
+
+    protected virtual int GenerateValue()
+    {
+        return 1;
     }
 
     protected virtual void OnRollBegin()

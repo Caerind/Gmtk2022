@@ -4,6 +4,10 @@ using UnityEngine.UI;
 
 public class PreparationScreen : MonoBehaviour
 {
+    [SerializeField] private Sprite buttonSprite;
+    [SerializeField] private Sprite buttonSpriteSelected;
+
+
     [SerializeField] private TMP_Text textMoney;
 
     [SerializeField] private Image imageT1;
@@ -32,6 +36,23 @@ public class PreparationScreen : MonoBehaviour
     [SerializeField] private Button decreaseT4;
     [SerializeField] private Button decreaseT5;
 
+    [SerializeField] private Button buttonPassive1;
+    [SerializeField] private Button buttonPassive2;
+    [SerializeField] private Button buttonPassive3;
+    [SerializeField] private Button buttonPassive4;
+    [SerializeField] private Image imagePassive1;
+    [SerializeField] private Image imagePassive2;
+    [SerializeField] private Image imagePassive3;
+    [SerializeField] private Image imagePassive4;
+    [SerializeField] private TMP_Text namePassive1;
+    [SerializeField] private TMP_Text namePassive2;
+    [SerializeField] private TMP_Text namePassive3;
+    [SerializeField] private TMP_Text namePassive4;
+    [SerializeField] private TMP_Text descPassive1;
+    [SerializeField] private TMP_Text descPassive2;
+    [SerializeField] private TMP_Text descPassive3;
+    [SerializeField] private TMP_Text descPassive4;
+
     [SerializeField] private Button readyButton;
 
     private void Start()
@@ -47,6 +68,11 @@ public class PreparationScreen : MonoBehaviour
         decreaseT3.onClick.AddListener(() => DecreaseTier(DieComponent.Tier.Tier3));
         decreaseT4.onClick.AddListener(() => DecreaseTier(DieComponent.Tier.Tier4));
         decreaseT5.onClick.AddListener(() => DecreaseTier(DieComponent.Tier.Tier5));
+
+        buttonPassive1.onClick.AddListener(() => ButtonPassive(1));
+        buttonPassive2.onClick.AddListener(() => ButtonPassive(2));
+        buttonPassive3.onClick.AddListener(() => ButtonPassive(3));
+        buttonPassive4.onClick.AddListener(() => ButtonPassive(4));
 
         readyButton.onClick.AddListener(() => Ready());
 
@@ -86,6 +112,23 @@ public class PreparationScreen : MonoBehaviour
         decreaseT5.interactable = gm.playerArmyScriptableObject.nbTier5 > 0;
 
         readyButton.interactable = gm.GetPlayerDiceCount() > 0;
+
+        buttonPassive1.image.sprite = (gm.playerPassive == gm.GetPassiveN(1)) ? buttonSpriteSelected : buttonSprite;
+        buttonPassive2.image.sprite = (gm.playerPassive == gm.GetPassiveN(2)) ? buttonSpriteSelected : buttonSprite;
+        buttonPassive3.image.sprite = (gm.playerPassive == gm.GetPassiveN(3)) ? buttonSpriteSelected : buttonSprite;
+        buttonPassive4.image.sprite = (gm.playerPassive == gm.GetPassiveN(4)) ? buttonSpriteSelected : buttonSprite;
+        imagePassive1.sprite = gm.GetPassiveN(1).sprite;
+        imagePassive2.sprite = gm.GetPassiveN(2).sprite;
+        imagePassive3.sprite = gm.GetPassiveN(3).sprite;
+        imagePassive4.sprite = gm.GetPassiveN(4).sprite;
+        namePassive1.text = gm.GetPassiveN(1).name;
+        namePassive2.text = gm.GetPassiveN(2).name;
+        namePassive3.text = gm.GetPassiveN(3).name;
+        namePassive4.text = gm.GetPassiveN(4).name;
+        descPassive1.text = gm.GetPassiveN(1).description;
+        descPassive2.text = gm.GetPassiveN(2).description;
+        descPassive3.text = gm.GetPassiveN(3).description;
+        descPassive4.text = gm.GetPassiveN(4).description;
 
         // Colors
         imageT1.color = dices.GetColor(DieComponent.Tier.Tier1);
@@ -170,5 +213,11 @@ public class PreparationScreen : MonoBehaviour
 
             UpdateStatus();
         }
+    }
+
+    private void ButtonPassive(int n)
+    {
+        GameManager.Instance.playerPassive = GameManager.Instance.GetPassiveN(n);
+        UpdateStatus();
     }
 }

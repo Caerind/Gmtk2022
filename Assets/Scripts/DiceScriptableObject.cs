@@ -3,7 +3,6 @@ using UnityEngine;
 [CreateAssetMenu]
 public class DiceScriptableObject : SingletonScriptableObject<DiceScriptableObject>
 {
-    public GameObject prefabGeneral;
 
     public GameObject prefabTier1;
     public int priceTier1;

@@ -97,13 +97,32 @@ public class DieComponent : BaseDieComponent
     protected override void OnRollBegin()
     {
         value = GenerateValue();
+    }
+
+    protected override void OnRollEnd()
+    {
+        if (number != null)
+        {
+            number.text = value.ToString();
+        }
+    }
+    protected override void OnRollContinue()
+    {
+        if (number != null)
+        {
+            number.text = GenerateValue().ToString();
+        }
+    }
+
+    public void UpdateValue()
+    {
         if (number != null)
         {
             number.text = value.ToString();
         }
     }
 
-    private int GenerateValue()
+    protected override int GenerateValue()
     {
         switch (tier)
         {

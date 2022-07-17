@@ -1,8 +1,7 @@
+using TMPro;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -10,10 +9,19 @@ public class GameManager : Singleton<GameManager>
     public float maxRollDiceTime = 2.0f;
     public float attackDieTime = 0.5f;
 
+    public List<Passive> playerPossiblePassives;
+    public Passive GetPassiveN(int n)
+    {
+        return playerPossiblePassives[n - 1];
+    }
+
     public int playerStartMoney = 2000;
 
-    public Canvas worldSpaceCanvas;
-    public Canvas HUDCanvas;
+    public Color hoverColor;
+    public Color selectedColor;
+
+    public CanvasWorldSpaceComponent canvasWorldSpace;
+    public CanvasHUDComponent canvasHUD;
     public RectTransform gainPopupTransform;
     public Vector2 gainPopupRandomDev;
     public GameObject dieNumberPrefab;
@@ -22,12 +30,15 @@ public class GameManager : Singleton<GameManager>
     public List<EnemyInfoScriptableObject> enemies;
     public int currentEnemyIndex = 0;
 
+    public Passive playerPassive;
+
     public enum GameState
     {
         None,
         Begining,
         Rolling,
         Rerolling,
+        Passives,
         Resolving,
         Ended
     }
@@ -54,13 +65,8 @@ public class GameManager : Singleton<GameManager>
     private bool playerWin = false;
     private int playerGain = 0;
 
-    private TMP_Text textGameState;
-    private Button buttonRoll;
-    private Button buttonSkipReroll;
-    private TMP_Text textRerollCount;
-    private Image imageReroll;
-    private TMP_Text textMoney;
-    private TMP_Text textEnemyName;
+    private float passiveTimer;
+    public float passivePhaseTime = 1.0f;
 
     public void NextEnemy()
     {
@@ -77,14 +83,14 @@ public class GameManager : Singleton<GameManager>
         position.x += Random.Range(-gainPopupRandomDev.x, gainPopupRandomDev.x);
         position.y += Random.Range(-gainPopupRandomDev.y, gainPopupRandomDev.y);
         GameObject popup = Instantiate(gainPopupPrefab, position, Quaternion.identity);
-        popup.transform.SetParent(HUDCanvas.transform);
+        popup.transform.SetParent(canvasHUD.transform);
         popup.GetComponentInChildren<TMP_Text>().text = "+" + gainAmount.ToString();
     }
 
     public TMP_Text CreateNumberText()
     {
         GameObject dieNumber = Instantiate(dieNumberPrefab);
-        dieNumber.transform.SetParent(worldSpaceCanvas.transform);
+        dieNumber.transform.SetParent(canvasWorldSpace.transform);
         return dieNumber.GetComponent<TMP_Text>();
     }
 
@@ -144,16 +150,37 @@ public class GameManager : Singleton<GameManager>
 #endif // UNITY_EDITOR
 
             playerArmy = armyComponent;
-            playerArmy.InstantiateArmy(playerArmyScriptableObject);
+            playerArmy.InstantiateArmy(playerArmyScriptableObject, playerPassive);
         }
         else
         {
             enemyArmy = armyComponent;
-            enemyArmy.InstantiateArmy(enemies[currentEnemyIndex].enemyArmy);
+            enemyArmy.InstantiateArmy(enemies[currentEnemyIndex].enemyArmy, enemies[currentEnemyIndex].enemyPassive);
         }
 
         if (playerArmy != null && enemyArmy != null)
         {
+            if (playerPassive != null)
+            {
+                canvasWorldSpace.imagePassivePlayer.gameObject.SetActive(true);
+                canvasWorldSpace.imagePassivePlayer.sprite = playerPassive.sprite;
+            }
+            else
+            {
+                canvasWorldSpace.imagePassivePlayer.gameObject.SetActive(false);
+            }
+
+            if (enemies[currentEnemyIndex].enemyPassive != null)
+            {
+                canvasWorldSpace.imagePassiveEnemy.gameObject.SetActive(true);
+                canvasWorldSpace.imagePassiveEnemy.sprite = enemies[currentEnemyIndex].enemyPassive.sprite;
+                canvasWorldSpace.imagePassiveEnemy.sprite = enemies[currentEnemyIndex].enemyPassive.sprite;
+            }
+            else
+            {
+                canvasWorldSpace.imagePassiveEnemy.gameObject.SetActive(false);
+            }
+
             SwitchGameState(GameState.Begining);
         }
     }
@@ -163,41 +190,9 @@ public class GameManager : Singleton<GameManager>
         this.targetGroupFinder = targetGroupFinder;
     }
 
-    public void RegisterTextGameStateComponent(TMP_Text textGameState)
+    public void ShouldStopRerollState()
     {
-        this.textGameState = textGameState;
-    }
-
-    public void RegisterButtonRollComponent(Button buttonRoll)
-    {
-        this.buttonRoll = buttonRoll;
-        this.buttonRoll.onClick.AddListener(() => SwitchGameState(GameState.Rolling));
-    }
-
-    public void RegisterButtonSkipRerollComponent(Button buttonSkipReroll)
-    {
-        this.buttonSkipReroll = buttonSkipReroll;
-        this.buttonSkipReroll.onClick.AddListener(() => shouldStopRerollState = true);
-    }
-
-    public void RegisterTextRerollCountComponent(TMP_Text textRerollCount)
-    {
-        this.textRerollCount = textRerollCount;
-    }
-
-    public void RegisterImageRerollComponent(Image imageReroll)
-    {
-        this.imageReroll = imageReroll;
-    }
-
-    public void RegisterTextMoneyComponent(TMP_Text textMoney)
-    {
-        this.textMoney = textMoney;
-    }
-
-    public void RegisterTextEnemyName(TMP_Text textEnemyName)
-    {
-        this.textEnemyName = textEnemyName;
+        shouldStopRerollState = true;
     }
 
     private void Update()
@@ -210,7 +205,15 @@ public class GameManager : Singleton<GameManager>
         }
         else if (GetCurrentState() == GameState.Rerolling && shouldStopRerollState && !HasRollingDice())
         {
-            SwitchGameState(GameState.Resolving);
+            SwitchGameState(GameState.Passives);
+        }
+        else if (GetCurrentState() == GameState.Passives)
+        {
+            passiveTimer -= Time.deltaTime;
+            if (passiveTimer <= 0.0f)
+            {
+                SwitchGameState(GameState.Resolving);
+            }
         }
         else if (GetCurrentState() == GameState.Resolving)
         {
@@ -220,40 +223,43 @@ public class GameManager : Singleton<GameManager>
 
     private void UpdateUI()
     {
-        if (textGameState != null)
+        if (canvasHUD != null)
         {
-            textGameState.text = currentState.ToString();
-        }
+            if (canvasHUD.textGameState != null)
+            {
+                canvasHUD.textGameState.text = currentState.ToString();
+            }
 
-        if (buttonRoll != null)
-        {
-            buttonRoll.gameObject.SetActive(GetCurrentState() == GameState.Begining);
-        }
+            if (canvasHUD.buttonRoll != null)
+            {
+                canvasHUD.buttonRoll.gameObject.SetActive(GetCurrentState() == GameState.Begining);
+            }
 
-        if (buttonSkipReroll != null)
-        {
-            buttonSkipReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
-        }
+            if (canvasHUD.buttonSkipReroll != null)
+            {
+                canvasHUD.buttonSkipReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
+            }
 
-        if (textRerollCount != null)
-        {
-            textRerollCount.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
-            textRerollCount.text = rerollCount.ToString();
-        }
+            if (canvasHUD.textRerollCount != null)
+            {
+                canvasHUD.textRerollCount.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
+                canvasHUD.textRerollCount.text = rerollCount.ToString();
+            }
 
-        if (imageReroll != null)
-        {
-            imageReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
-        }
+            if (canvasHUD.imageReroll != null)
+            {
+                canvasHUD.imageReroll.gameObject.SetActive(GetCurrentState() == GameState.Rerolling && rerollCount > 0);
+            }
 
-        if (textMoney != null)
-        {
-            textMoney.text = playerGain.ToString();
-        }
+            if (canvasHUD.textMoney != null)
+            {
+                canvasHUD.textMoney.text = playerGain.ToString();
+            }
 
-        if (textEnemyName != null)
-        {
-            textEnemyName.text = enemies[currentEnemyIndex].enemyName;
+            if (canvasHUD.textEnemyName != null)
+            {
+                canvasHUD.textEnemyName.text = enemies[currentEnemyIndex].enemyName;
+            }
         }
     }
 
@@ -284,6 +290,9 @@ public class GameManager : Singleton<GameManager>
                 rerollCount = Random.Range(1, 5); // D4
                 shouldStopRerollState = false;
                 break;
+            case GameState.Passives:
+                passiveTimer = passivePhaseTime;
+                break;
             case GameState.Resolving:
                 playerArmy.Replace(valueOrdered: true);
                 enemyArmy.Replace(valueOrdered: true);
@@ -304,9 +313,9 @@ public class GameManager : Singleton<GameManager>
                     }
                 }
                 foreach (ArmyComponent.DieValue die in playerValues)
-                    die.die.Hover(Color.yellow);
+                    die.die.Hover(selectedColor);
                 foreach (ArmyComponent.DieValue die in enemyValues)
-                    die.die.Hover(Color.yellow);
+                    die.die.Hover(selectedColor);
                 timeWaitBetweenDie = 0.0f;
                 break;
             case GameState.Ended:

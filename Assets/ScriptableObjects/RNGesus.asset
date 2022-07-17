@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RNGesus
   m_EditorClassIdentifier: 
   enemyName: RNGesus
-  enemyPassive: {fileID: 0}
+  enemyPassive: {fileID: 11400000, guid: 78ede6d2c3890864ca8843fbf7d28b26, type: 2}
   enemyMap: {fileID: 21300000, guid: 5764d10e4441e054197b579a30287eac, type: 3}
   enemyArmy: {fileID: 11400000, guid: bcd0ef6680dc5c245ab1ef928938bdf1, type: 2}
   enemyDescription: The deity responsible for luck, chance, and random elements
