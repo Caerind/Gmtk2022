@@ -13,9 +13,9 @@ public abstract class Passive : ScriptableObject
 
 public static class Extensions
 {
-    public static IEnumerable<T> Randomize<T>(this IEnumerable<T> source)
+    public static IEnumerable<T> Randomize<T>(this List<T> source)
     {
         System.Random rnd = new System.Random();
-        return source.OrderBy((item) => rnd.Next());
+        return source.OrderBy((item) => rnd.Next()).ToList<T>();
     }
 }

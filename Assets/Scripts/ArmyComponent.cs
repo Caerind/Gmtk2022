@@ -124,7 +124,11 @@ public class ArmyComponent : MonoBehaviour
         // Find how to compute this
         // -> Based on screen size
         // -> Based on army size
-        int dicePerRow = 7;
+
+        int idealRowCount = 3;
+        int dicePerRowTest = dice.Count / idealRowCount;
+
+        int dicePerRow = Mathf.Clamp(dicePerRowTest, 5, 12);
 
         float center = (dicePerRow % 2 == 0) ? (dicePerRow - 1) / 2 + 0.5f : (dicePerRow - 1) / 2;
         int rowCount = dice.Count / dicePerRow;

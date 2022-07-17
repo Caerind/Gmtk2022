@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [CreateAssetMenu(menuName = "Passives/FirePassive")]
 public class FirePassive : Passive
@@ -8,8 +9,7 @@ public class FirePassive : Passive
     {
         if (player)
         {
-            List<DieComponent> p = new List<DieComponent>(playerArmy);
-            p.Randomize();
+            List<DieComponent> p = new List<DieComponent>(playerArmy).Randomize().ToList();
             int pv = (value > playerArmy.Count) ? playerArmy.Count : value;
             for (int i = 0; i < pv; ++i)
             {
@@ -20,8 +20,7 @@ public class FirePassive : Passive
         }
         else
         {
-            List<DieComponent> e = new List<DieComponent>(enemyArmy);
-            e.Randomize();
+            List<DieComponent> e = new List<DieComponent>(enemyArmy).Randomize().ToList();
             int ev = (value > enemyArmy.Count) ? enemyArmy.Count : value;
             for (int i = 0; i < ev; ++i)
             {
