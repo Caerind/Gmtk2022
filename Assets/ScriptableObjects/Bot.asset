@@ -16,8 +16,8 @@ MonoBehaviour:
   enemyPassive: {fileID: 0}
   enemyMap: {fileID: 21300000, guid: f11ab99c09be25341ba663401407eace, type: 3}
   enemyArmy: {fileID: 11400000, guid: 99b816f430b2f534c94518ee48234993, type: 2}
-  enemyDescription: I'll teach you how it works here youngling
+  enemyDescription: '*bot noise*'
   enemyEndPhrasesWin:
-  - I'm the best bot you'll ever face
+  - '*happy bot noise*'
   enemyEndPhrasesLoose:
-  - That's impossible!
+  - '*sad bot noise*'
