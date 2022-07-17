@@ -80,7 +80,7 @@ public class DieComponent : BaseDieComponent
                         int gainAmount = DiceScriptableObject.Instance.GetPrice(tier) / GameManager.Instance.gainFactor;
                         GameManager.Instance.IncreasePlayerGain(gainAmount);
                         // TODO : Play coin sound
-                        GameManager.Instance.CreateGainPopup(transform.position, gainAmount);
+                        GameManager.Instance.CreateGainPopup(gainAmount);
                     }
                 }
 

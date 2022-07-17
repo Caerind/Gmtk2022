@@ -59,6 +59,9 @@ MonoBehaviour:
   attackDieTime: 0.5
   playerStartMoney: 1500
   worldSpaceCanvas: {fileID: 0}
+  HUDCanvas: {fileID: 0}
+  gainPopupTransform: {fileID: 0}
+  gainPopupRandomDev: {x: 50, y: 10}
   dieNumberPrefab: {fileID: 1017476445389649289, guid: 7b45aeb86ad46824da9d6999d94617a5, type: 3}
   gainPopupPrefab: {fileID: 1883052203167371782, guid: 1f1b0ab1fa3a56e42ad0a6b79ec14ed7, type: 3}
   enemies:

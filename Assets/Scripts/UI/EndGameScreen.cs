@@ -80,7 +80,7 @@ public class EndGameScreen : MonoBehaviour
             textGain.text = "Gain: " + totalGain.ToString();
         }
 
-        textTotal.gameObject.SetActive(state <= EndGameState.RaisingMoney);
+        textTotal.gameObject.SetActive(state == EndGameState.RaisingMoney);
         textTotal.text = GameManager.Instance.GetPlayerMoney().ToString();
 
         textEnemyName.gameObject.SetActive(state > EndGameState.RaisingMoney);

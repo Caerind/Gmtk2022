@@ -13,6 +13,9 @@ public class GameManager : Singleton<GameManager>
     public int playerStartMoney = 2000;
 
     public Canvas worldSpaceCanvas;
+    public Canvas HUDCanvas;
+    public RectTransform gainPopupTransform;
+    public Vector2 gainPopupRandomDev;
     public GameObject dieNumberPrefab;
     public GameObject gainPopupPrefab;
 
@@ -68,10 +71,13 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    public void CreateGainPopup(Vector2 position, int gainAmount)
+    public void CreateGainPopup(int gainAmount)
     {
+        Vector2 position = gainPopupTransform.position;
+        position.x += Random.Range(-gainPopupRandomDev.x, gainPopupRandomDev.x);
+        position.y += Random.Range(-gainPopupRandomDev.y, gainPopupRandomDev.y);
         GameObject popup = Instantiate(gainPopupPrefab, position, Quaternion.identity);
-        popup.transform.SetParent(worldSpaceCanvas.transform);
+        popup.transform.SetParent(HUDCanvas.transform);
         popup.GetComponentInChildren<TMP_Text>().text = "+" + gainAmount.ToString();
     }
 
@@ -259,6 +265,8 @@ public class GameManager : Singleton<GameManager>
                 playerGain = 0;
                 break;
             case GameState.Begining:
+                playerArmy.UnhoverAll();
+                enemyArmy.UnhoverAll();
                 playerArmy.Replace(valueOrdered: false);
                 enemyArmy.Replace(valueOrdered: false);
                 List<Transform> diceTransforms = new List<Transform>(2);
@@ -295,6 +303,10 @@ public class GameManager : Singleton<GameManager>
                         enemyValues = enemyValues.Skip(enemyValues.Count - playerValues.Count).Take(playerValues.Count).ToList();
                     }
                 }
+                foreach (ArmyComponent.DieValue die in playerValues)
+                    die.die.Hover(Color.yellow);
+                foreach (ArmyComponent.DieValue die in enemyValues)
+                    die.die.Hover(Color.yellow);
                 timeWaitBetweenDie = 0.0f;
                 break;
             case GameState.Ended:

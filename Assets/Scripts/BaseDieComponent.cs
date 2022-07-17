@@ -9,11 +9,25 @@ public class BaseDieComponent : MonoBehaviour
     public bool isPlayerDie = false;
 
     private Collider2D myCollider2D;
+    protected SpriteRenderer myHoverSpriteRenderer;
 
     private void Awake()
     {
         myCollider2D = GetComponent<Collider2D>();
+        myHoverSpriteRenderer = transform.Find("Square").GetComponent<SpriteRenderer>();
+        myHoverSpriteRenderer.gameObject.SetActive(false);
         OnRollBegin();
+    }
+
+    public void Hover(Color color)
+    {
+        myHoverSpriteRenderer.gameObject.SetActive(true);
+        myHoverSpriteRenderer.color = color;
+    }
+
+    public void Unhover()
+    {
+        myHoverSpriteRenderer.gameObject.SetActive(false);
     }
 
     public void Roll()
@@ -27,6 +41,11 @@ public class BaseDieComponent : MonoBehaviour
 
     protected void UpdateBase()
     {
+        if (myHoverSpriteRenderer.color == Color.magenta)
+        {
+            Unhover();
+        }
+
         if (isRolling)
         {
             Vector3 euler = transform.localEulerAngles;
@@ -45,10 +64,12 @@ public class BaseDieComponent : MonoBehaviour
         {
             if (isPlayerDie && GameManager.Instance.GetCurrentState() == GameManager.GameState.Rerolling && GameManager.Instance.CanRerollDie())
             {
-                if (Input.GetMouseButtonDown(0))
+                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (myCollider2D.OverlapPoint(mousePosition))
                 {
-                    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    if (myCollider2D.OverlapPoint(mousePosition))
+                    Hover(Color.magenta);
+
+                    if (Input.GetMouseButtonDown(0))
                     {
                         Roll();
                         GameManager.Instance.RerollDie();

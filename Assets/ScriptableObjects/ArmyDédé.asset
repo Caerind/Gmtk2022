@@ -15,8 +15,8 @@ MonoBehaviour:
   passive1: {fileID: 0}
   passive2: {fileID: 0}
   passive3: {fileID: 0}
-  nbTier1: 8
+  nbTier1: 12
   nbTier2: 5
-  nbTier3: 3
-  nbTier4: 1
+  nbTier3: 4
+  nbTier4: 3
   nbTier5: 0

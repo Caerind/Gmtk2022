@@ -193,4 +193,11 @@ public class ArmyComponent : MonoBehaviour
     {
         dice.Remove(die);
     }
+
+    public void UnhoverAll()
+    {
+        generalDie.Unhover();
+        foreach (var die in dice)
+            die.Unhover();
+    }
 }
