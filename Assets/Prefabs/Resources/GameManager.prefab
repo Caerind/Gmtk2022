@@ -57,7 +57,7 @@ MonoBehaviour:
   minRollDiceTime: 1
   maxRollDiceTime: 1.5
   attackDieTime: 0.5
-  explosionPrefab: {fileID: 2184704121634579241, guid: 080c651af85e8b440a0fa6511ba2e57f, type: 3}
+  explosionPrefab: {fileID: 8385363755080082456, guid: 080c651af85e8b440a0fa6511ba2e57f, type: 3}
   playerPossiblePassives:
   - {fileID: 11400000, guid: 809cae22caa93f34591e885414914b20, type: 2}
   - {fileID: 11400000, guid: e37c91dc24f8a9344ace96d829f338ff, type: 2}
