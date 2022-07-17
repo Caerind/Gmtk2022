@@ -20,3 +20,11 @@ Loose
 
 https://opengameart.org/content/button-click-sound-effect-cc0public-domain
 ButtonClick  
+
+
+Sfxr
+explosion
+pickupCoin
+
+https://opengameart.org/content/2-dice-roll-29-throws
+DiceSounds

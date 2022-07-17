@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Peon
   m_EditorClassIdentifier: 
   enemyName: Peon
-  enemyPassive: {fileID: 11400000, guid: 809cae22caa93f34591e885414914b20, type: 2}
+  enemyPassive: {fileID: 11400000, guid: e37c91dc24f8a9344ace96d829f338ff, type: 2}
   enemyMap: {fileID: 21300000, guid: 720351d8a46185146b0328e51499fe71, type: 3}
   enemyArmy: {fileID: 11400000, guid: df8ae44a134e99f499f7258bb37abab6, type: 2}
   enemyDescription: Peon

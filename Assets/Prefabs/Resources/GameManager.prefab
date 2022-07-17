@@ -55,16 +55,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minRollDiceTime: 1
-  maxRollDiceTime: 3
+  maxRollDiceTime: 1.5
   attackDieTime: 0.5
+  explosionPrefab: {fileID: 2184704121634579241, guid: 080c651af85e8b440a0fa6511ba2e57f, type: 3}
   playerPossiblePassives:
   - {fileID: 11400000, guid: 809cae22caa93f34591e885414914b20, type: 2}
   - {fileID: 11400000, guid: e37c91dc24f8a9344ace96d829f338ff, type: 2}
   - {fileID: 11400000, guid: d464744523d5a8d47887ce8ba869104f, type: 2}
   - {fileID: 11400000, guid: 9df268d82f8c30b44bb444edf3bf871c, type: 2}
-  playerStartMoney: 1600
+  playerStartMoney: 1500
   hoverColor: {r: 1, g: 0, b: 0.81019783, a: 0.5019608}
   selectedColor: {r: 1, g: 0.9635534, b: 0, a: 0.5019608}
+  boostColor: {r: 0, g: 1, b: 0, a: 0.5019608}
   canvasWorldSpace: {fileID: 0}
   canvasHUD: {fileID: 0}
   gainPopupTransform: {fileID: 0}
@@ -77,12 +79,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b5db5bbe955dccf4e836692dd2dc3440, type: 2}
   - {fileID: 11400000, guid: de7624311baa98a45a00dcd418271490, type: 2}
   currentEnemyIndex: 0
+  diceSounds: 5
   playerPassive: {fileID: 0}
   playerArmyScriptableObject: {fileID: 0}
   cameraShake: {fileID: 0}
   gainFactor: 5
   winFactor: 2
   looseBonus: 300
+  passivePhaseTime: 1
 --- !u!114 &8559577443766302535
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,6 +225,69 @@ MonoBehaviour:
     source: {fileID: 0}
   - name: AttackEquality
     clip: {fileID: 8300000, guid: 0b5d0a173f227204cb8573941f2bf1ad, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Coin
+    clip: {fileID: 8300000, guid: b0e643052fddc8f4ea51cd471b0abdab, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Explosion
+    clip: {fileID: 8300000, guid: 361a001849d16c74faa2df2881f33e08, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Dice0
+    clip: {fileID: 8300000, guid: 7bc02e36d9a7dfa46bc53e857d3d2f09, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Dice1
+    clip: {fileID: 8300000, guid: 74cda3fa84858c54c95dc9341ab43341, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Dice2
+    clip: {fileID: 8300000, guid: b40c4ff55fa29ad4db7808cfea1357fa, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Dice3
+    clip: {fileID: 8300000, guid: 9410fc836e007d24783a0d55e09523eb, type: 3}
+    volume: 0.5
+    volumeVariance: 0.25
+    pitch: 1
+    pitchVariance: 0.5
+    loop: 0
+    mixerGroup: {fileID: 0}
+    source: {fileID: 0}
+  - name: Dice4
+    clip: {fileID: 8300000, guid: 751a3f02b52e9a645a070e40e5beeaca, type: 3}
     volume: 0.5
     volumeVariance: 0.25
     pitch: 1

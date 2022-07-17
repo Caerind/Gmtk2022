@@ -9,6 +9,8 @@ public class GameManager : Singleton<GameManager>
     public float maxRollDiceTime = 2.0f;
     public float attackDieTime = 0.5f;
 
+    public GameObject explosionPrefab;
+
     public List<Passive> playerPossiblePassives;
     public Passive GetPassiveN(int n)
     {
@@ -19,6 +21,7 @@ public class GameManager : Singleton<GameManager>
 
     public Color hoverColor;
     public Color selectedColor;
+    public Color boostColor;
 
     public CanvasWorldSpaceComponent canvasWorldSpace;
     public CanvasHUDComponent canvasHUD;
@@ -29,6 +32,13 @@ public class GameManager : Singleton<GameManager>
 
     public List<EnemyInfoScriptableObject> enemies;
     public int currentEnemyIndex = 0;
+
+    public int diceSounds = 5;
+    public void RollDiceSound()
+    {
+        AudioManager.PlaySound("Dice" + Random.Range(0, diceSounds));
+    }
+
 
     public Passive playerPassive;
 
@@ -55,8 +65,8 @@ public class GameManager : Singleton<GameManager>
     private bool shouldStopRerollState = false;
     private float timeWaitBetweenDie;
 
-    private List<ArmyComponent.DieValue> playerValues;
-    private List<ArmyComponent.DieValue> enemyValues;
+    private List<DieComponent> playerValues;
+    private List<DieComponent> enemyValues;
 
     public int gainFactor = 5;
     public int winFactor = 2;
@@ -287,20 +297,34 @@ public class GameManager : Singleton<GameManager>
                 break;
             case GameState.Rerolling:
                 rollingDiceCount = 0;
-                rerollCount = Random.Range(1, 5); // D4
+                rerollCount = Random.Range(1, 4); // D3
                 shouldStopRerollState = false;
                 break;
             case GameState.Passives:
-                passiveTimer = passivePhaseTime;
+                currentState = newState; // hack for roll timer
+                passiveTimer = (playerPassive != null || enemies[currentEnemyIndex].enemyPassive != null) ? passivePhaseTime : 0.0f;
+                if (playerPassive != null)
+                {
+                    playerPassive.ApplyPassive(true, playerArmy.generalDie.value, playerArmy.dice, enemyArmy.dice);
+                }
+                if (enemies[currentEnemyIndex].enemyPassive != null)
+                {
+                    enemies[currentEnemyIndex].enemyPassive.ApplyPassive(false, enemyArmy.generalDie.value, playerArmy.dice, enemyArmy.dice);
+                }
                 break;
             case GameState.Resolving:
+                playerArmy.UnhoverAll();
+                enemyArmy.UnhoverAll();
                 playerArmy.Replace(valueOrdered: true);
                 enemyArmy.Replace(valueOrdered: true);
                 playerValues = playerArmy.GetValues();
                 enemyValues = enemyArmy.GetValues();
-                ArmyComponent.DieValueComparer comparer = new ArmyComponent.DieValueComparer();
-                playerValues.Sort(comparer);
-                enemyValues.Sort(comparer);
+                // Already sorted
+                /*
+                playerValues.OrderBy(x => x.value);
+                enemyValues.OrderBy(x => x.value);
+                */
+                /*
                 if (playerValues.Count != enemyValues.Count)
                 {
                     if (playerValues.Count > enemyValues.Count)
@@ -316,6 +340,7 @@ public class GameManager : Singleton<GameManager>
                     die.die.Hover(selectedColor);
                 foreach (ArmyComponent.DieValue die in enemyValues)
                     die.die.Hover(selectedColor);
+                */
                 timeWaitBetweenDie = 0.0f;
                 break;
             case GameState.Ended:
@@ -377,39 +402,55 @@ public class GameManager : Singleton<GameManager>
             {
                 SwitchGameState(GameState.Ended);
             }
-            else if (playerValues == null || playerValues.Count == 0)
+            else if (playerValues == null || playerValues.Count == 0 || enemyValues == null || enemyValues.Count == 0)
             {
                 SwitchGameState(GameState.Begining);
             }
             else
             {
-                ArmyComponent.DieValue playerDieValue = playerValues[0];
-                ArmyComponent.DieValue enemyDieValue = enemyValues[0];
+                DieComponent playerDie = playerValues[0];
+                DieComponent enemyDie = enemyValues[0];
+
                 playerValues.RemoveAt(0);
                 enemyValues.RemoveAt(0);
 
-                Vector2 midPos = (playerDieValue.die.transform.position + enemyDieValue.die.transform.position) * 0.5f;
+                Vector2 midPos = (playerDie.transform.position + enemyDie.transform.position) * 0.5f;
 
                 // mdr names
                 bool playerDieDie = false; 
                 bool enemyDieDie = false;
 
-                ArmyComponent.DieValueComparer comparer = new ArmyComponent.DieValueComparer();
-                int cmp = comparer.Compare(playerDieValue, enemyDieValue);
+                DieComponent otherDead = null;
+
+                int cmp = playerDie.value.CompareTo(enemyDie.value);
                 if (cmp > 0)
                 {
                     enemyDieDie = true;
-                    enemyArmy.RemoveDie(enemyDieValue.die);
+                    enemyArmy.RemoveDie(enemyDie);
+
+                    if (enemyValues != null && enemyValues.Count > 0 && playerDie.value.CompareTo((enemyDie.value + enemyValues[0].value) * 2) > 0)
+                    {
+                        otherDead = enemyValues[0];
+                        enemyValues.RemoveAt(0);
+                        enemyArmy.RemoveDie(otherDead);
+                    }
                 }
                 else if (cmp < 0)
                 {
                     playerDieDie = true;
-                    playerArmy.RemoveDie(playerDieValue.die);
+                    playerArmy.RemoveDie(playerDie);
+
+                    if (playerValues != null && playerValues.Count > 0 && enemyDie.value.CompareTo((playerDie.value + playerValues[0].value) * 2) > 0)
+                    {
+                        otherDead = playerValues[0];
+                        playerValues.RemoveAt(0);
+                        playerArmy.RemoveDie(otherDead);
+                    }
                 }
 
                 bool playEqualitySound = !playerDieDie && !enemyDieDie;
-                playerDieValue.die.Attack(midPos, attackDieTime, playerDieDie, playEqualitySound);
-                enemyDieValue.die.Attack(midPos, attackDieTime, enemyDieDie, false);
+                playerDie.Attack(midPos, attackDieTime, playerDieDie, playEqualitySound, (otherDead != null && !otherDead.isPlayerDie) ? otherDead : null);
+                enemyDie.Attack(midPos, attackDieTime, enemyDieDie, false, (otherDead != null && otherDead.isPlayerDie) ? otherDead : null);
             }
         }
     }

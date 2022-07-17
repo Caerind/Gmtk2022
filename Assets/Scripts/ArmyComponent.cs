@@ -9,7 +9,7 @@ public class ArmyComponent : MonoBehaviour
 
     public Passive passive;
 
-    private List<DieComponent> dice;
+    [HideInInspector] public List<DieComponent> dice;
     [HideInInspector] public DieComponent generalDie;
     private Transform furtherMostPoint;
 
@@ -211,18 +211,9 @@ public class ArmyComponent : MonoBehaviour
         }
     }
 
-    public List<DieValue> GetValues()
+    public List<DieComponent> GetValues()
     {
-        List<DieValue> values = new List<DieValue>(dice.Count);
-        foreach (DieComponent die in dice)
-        {
-            DieValue dieValue = new DieValue();
-            dieValue.die = die;
-            dieValue.tier = die.tier;
-            dieValue.value = die.value;
-            values.Add(dieValue);
-        }
-        return values;
+        return new List<DieComponent>(dice);
     }
 
     public void RemoveDie(DieComponent die)

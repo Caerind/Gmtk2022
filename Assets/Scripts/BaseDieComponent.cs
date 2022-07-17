@@ -32,9 +32,10 @@ public class BaseDieComponent : MonoBehaviour
 
     public void Roll()
     {
+        GameManager.Instance.RollDiceSound();
         factor = Random.Range(0.0f, 1.0f);
         isRolling = true;
-        timeRollingRemaining = Random.Range(GameManager.Instance.minRollDiceTime, GameManager.Instance.maxRollDiceTime);
+        timeRollingRemaining = Random.Range(GameManager.Instance.minRollDiceTime, (GameManager.Instance.GetCurrentState() != GameManager.GameState.Passives) ? GameManager.Instance.maxRollDiceTime : GameManager.Instance.passivePhaseTime * 0.8f);
         GameManager.Instance.AddRollingDice();
         OnRollBegin();
     }

@@ -59,7 +59,16 @@ public class EndGameScreen : MonoBehaviour
         }
 
         textComment.gameObject.SetActive(state <= EndGameState.RaisingMoney);
-        textComment.text = "Wow, that was a cool game";
+        string comment;
+        if (GameManager.Instance.GetPlayerHasWin())
+        {
+            comment = GameManager.Instance.enemies[GameManager.Instance.currentEnemyIndex].enemyEndPhrasesLoose[Random.Range(0, GameManager.Instance.enemies[GameManager.Instance.currentEnemyIndex].enemyEndPhrasesLoose.Count)];
+        }
+        else
+        {
+            comment = GameManager.Instance.enemies[GameManager.Instance.currentEnemyIndex].enemyEndPhrasesWin[Random.Range(0, GameManager.Instance.enemies[GameManager.Instance.currentEnemyIndex].enemyEndPhrasesWin.Count)];
+        }
+        textComment.text = comment;
 
         textGain.gameObject.SetActive(state <= EndGameState.RaisingMoney);
         if (state == EndGameState.DisplayStart)

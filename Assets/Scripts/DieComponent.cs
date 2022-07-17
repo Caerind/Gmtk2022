@@ -15,6 +15,8 @@ public class DieComponent : BaseDieComponent
     public Tier tier = Tier.Tier1;
     public int value;
 
+    public DieComponent otherDead = null;
+
     private TrailRenderer trail;
 
     private Vector2 currentPos;
@@ -79,7 +81,23 @@ public class DieComponent : BaseDieComponent
                     {
                         int gainAmount = DiceScriptableObject.Instance.GetPrice(tier) / GameManager.Instance.gainFactor;
                         GameManager.Instance.IncreasePlayerGain(gainAmount);
-                        // TODO : Play coin sound
+                        AudioManager.PlaySound("Coin");
+                        GameManager.Instance.CreateGainPopup(gainAmount);
+                    }
+                }
+
+                if (otherDead != null)
+                {
+                    Destroy(otherDead.gameObject);
+                    Destroy(otherDead.number.gameObject);
+
+                    Instantiate(GameManager.Instance.explosionPrefab, otherDead.transform.position, Quaternion.identity);
+
+                    if (!otherDead.isPlayerDie)
+                    {
+                        int gainAmount = DiceScriptableObject.Instance.GetPrice(otherDead.tier) / GameManager.Instance.gainFactor;
+                        GameManager.Instance.IncreasePlayerGain(gainAmount);
+                        AudioManager.PlaySound("Coin");
                         GameManager.Instance.CreateGainPopup(gainAmount);
                     }
                 }
@@ -135,7 +153,7 @@ public class DieComponent : BaseDieComponent
         return 0;
     }
 
-    public void Attack(Vector2 targetPos, float timeToReachTarget, bool shouldBeDestroyed, bool playEqualitySound)
+    public void Attack(Vector2 targetPos, float timeToReachTarget, bool shouldBeDestroyed, bool playEqualitySound, DieComponent otherDead)
     {
         currentPos = transform.position;
         this.targetPos = targetPos;
@@ -145,6 +163,7 @@ public class DieComponent : BaseDieComponent
         this.shouldBeDestroyed = shouldBeDestroyed;
         this.playEqualitySound = playEqualitySound;
         EnableTrail();
+        this.otherDead = otherDead;
     }
 
     public void EnableTrail()
